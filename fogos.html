@@ -1,0 +1,153 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fogos de Artifício - Eu te amo, Mel</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #24242a, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+        }
+        .frame {
+            position: absolute;
+            border: 5px solid white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            border-radius: 15px;
+        }
+        .frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .love-text {
+            position: absolute;
+            color: white;
+            font-size: 2rem;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.9);
+            opacity: 0;
+            transform: scale(0.5) rotate(-20deg);
+            transition: opacity 0.8s, transform 0.8s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="frame" style="top: 10%; left: 10%; width: 200px; height: 150px;">
+        <img src="foto1.jpg.jpg" alt="Foto 1">
+    </div>
+    <div class="frame" style="top: 10%; right: 10%; width: 200px; height: 150px;">
+        <img src="foto2.jpg.jpg" alt="Foto 2">
+    </div>
+    <div class="frame" style="bottom: 10%; left: 10%; width: 200px; height: 150px;">
+        <img src="foto3.jpg.jpg" alt="Foto 3">
+    </div>
+    <div class="frame" style="bottom: 10%; right: 10%; width: 200px; height: 150px;">
+        <img src="foto4.jpg.jpg" alt="Foto 4">
+    </div>
+
+    <canvas id="fireworksCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const colors = ['#ff5252', '#ffa726', '#ffd740', '#69f0ae', '#40c4ff', '#ab47bc'];
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 3 + 2;
+                this.speedX = (Math.random() - 0.5) * 8;
+                this.speedY = (Math.random() - 0.5) * 8;
+                this.life = 120;
+                this.opacity = 1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= 1;
+                this.opacity -= 0.008;
+            }
+        }
+
+        function createExplosion(x, y) {
+            const numParticles = 70;
+            for (let i = 0; i < numParticles; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)].replace('#', '').match(/.{1,2}/g).map(hex => parseInt(hex, 16));
+                particles.push(new Particle(x, y, color.join(',')));
+            }
+
+            const text = document.createElement('div');
+            text.classList.add('love-text');
+            text.textContent = 'Eu te amo, Mel';
+            document.body.appendChild(text);
+
+            const textWidth = text.offsetWidth;
+            const textHeight = text.offsetHeight;
+            text.style.left = `${x - textWidth / 2}px`;
+            text.style.top = `${y - textHeight / 2}px`;
+
+            requestAnimationFrame(() => {
+                text.style.opacity = 1;
+                text.style.transform = 'scale(1) rotate(0deg)';
+            });
+
+            setTimeout(() => {
+                text.style.opacity = 0;
+                text.style.transform = 'scale(0.5) rotate(20deg)';
+                setTimeout(() => text.remove(), 800);
+            }, 2500);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.life > 0);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('click', e => {
+            const x = e.clientX;
+            const y = e.clientY;
+            createExplosion(x, y);
+        });
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
